@@ -2,17 +2,16 @@ from setuptools import setup, find_packages
 
 setup(
     name='sangreal-calendar',
-    version='0.0.1',
-    description=(
-        'trade_dt handle for A-share market'
-    ),
+    version='0.0.3',
+    description=('trade_dt handle for A-share market'),
     install_requires=[
         'bs4',
-        'lxml', 
-        'tushare',
+        'lxml',
         'requests',
+        'fastcache',
         'pandas',
-	'fastcache',
+        'numpy',
+        'tushare',
     ],
     # long_description=open('README.rst').read(),
     author='liubola',
