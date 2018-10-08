@@ -1,6 +1,7 @@
-import tushare as ts
 from fastcache import lru_cache
+
 from .datasource import mixin_trade_dt
+
 
 def df_handle(date):
     return date if isinstance(date, str) else date.strftime('%Y%m%d')

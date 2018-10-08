@@ -37,6 +37,7 @@ class RefreshBase(metaclass=ABCMeta):
         end_dt = end_dt.strftime('%Y%m%d') if not isinstance(end_dt,
                                                              str) else end_dt
         df = get_trade_dt_list(start_dt, end_dt).copy()
+        
         df['trade_dt'] = df['trade_dt'].apply(func)
         df.drop_duplicates(inplace=True)
         return df
@@ -50,39 +51,39 @@ class Monthly(RefreshBase):
             tmp_df = self.freq_handle(arg, df)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        return pd.to_datetime(all_trade_dt)
+        all_trade_dt = pd.to_datetime(all_trade_dt)
+        return all_trade_dt[all_trade_dt >= start_dt]
 
 
 class Weekly(RefreshBase):
     def get_trade_dt_list(self, start_dt, end_dt):
         start_dt = start_dt.strftime('%Y%m%d')
         end_dt = end_dt.strftime('%Y%m%d')
-        df = get_trade_dt_list(start_dt, end_dt).copy()
+        df = get_trade_dt_list(step_trade_dt(start_dt, -20), end_dt).copy()
+        df['trade_dt'] = pd.to_datetime(df['trade_dt'])
+        df['week'] = df['trade_dt'].map(lambda x: f"{x.year}{x.week}")
         all_trade_dt = pd.Series()
         for arg in self.args:
             if arg == 1:
-                tmp_df = np.intersect1d(
-                    pd.bdate_range(
-                        start='20001225', end=end_dt,
-                        freq='5B').map(lambda x: x.strftime('%Y%m%d')),
-                    df['trade_dt'])
-                tmp_df = pd.Series(tmp_df)
+                tmp_df = df.drop_duplicates('week', keep='first')['trade_dt']
             elif arg == -1:
-                tmp_df = np.intersect1d(
-                    pd.bdate_range(
-                        start='20001229', end=end_dt,
-                        freq='5B').map(lambda x: x.strftime('%Y%m%d')),
-                    df['trade_dt'])
-                tmp_df = pd.Series(tmp_df)
+                tmp_df = df.drop_duplicates('week', keep='last')['trade_dt']
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        return pd.to_datetime(all_trade_dt)
+        return all_trade_dt[all_trade_dt >= start_dt].drop_duplicates()
 
 
-class BiWeekly(Weekly):
+class BiWeekly(RefreshBase):
     def get_trade_dt_list(self, start_dt, end_dt):
-        df = super().get_trade_dt_list(start_dt, end_dt)
-        return df[::2]
+        all_trade_dt = pd.Series()
+        for arg in self.args:
+            if arg == 1:
+                tmp_df = Weekly(1).get_trade_dt_list(start_dt, end_dt)[::2]
+            elif arg == -1:
+                tmp_df = Weekly(-1).get_trade_dt_list(start_dt, end_dt)[::2]
+            all_trade_dt = pd.concat([all_trade_dt, tmp_df])
+        all_trade_dt.sort_values(inplace=True)
+        return all_trade_dt.drop_duplicates()
 
 
 class Quarterly(RefreshBase):
@@ -104,7 +105,8 @@ class Quarterly(RefreshBase):
             tmp_df = self.freq_handle(arg, df, 3)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        return pd.to_datetime(all_trade_dt)
+        all_trade_dt = pd.to_datetime(all_trade_dt)
+        return all_trade_dt[all_trade_dt >= start_dt]
 
 
 class Reportly(RefreshBase):
@@ -139,7 +141,8 @@ class Reportly(RefreshBase):
                 tmp_df = df['trade_dt'].apply(neg_report)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        return pd.to_datetime(all_trade_dt)
+        all_trade_dt = pd.to_datetime(all_trade_dt)
+        return all_trade_dt[all_trade_dt >= start_dt]
 
 
 class Yearly(RefreshBase):
@@ -150,7 +153,8 @@ class Yearly(RefreshBase):
             tmp_df = self.freq_handle(arg, df, 100)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        return pd.to_datetime(all_trade_dt)
+        all_trade_dt = pd.to_datetime(all_trade_dt)
+        return all_trade_dt[all_trade_dt >= start_dt]
 
 
 class Halfyearly(RefreshBase):
@@ -168,7 +172,8 @@ class Halfyearly(RefreshBase):
             tmp_df = self.freq_handle(arg, df, 6)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        return pd.to_datetime(all_trade_dt)
+        all_trade_dt = pd.to_datetime(all_trade_dt)
+        return all_trade_dt[all_trade_dt >= start_dt]
 
 
 if __name__ == '__main__':
@@ -182,6 +187,6 @@ if __name__ == '__main__':
     # print(
     #     Quarterly(1, -1).get_trade_dt_list(
     #         parse('20080101'), parse('20100101')))
-    lst = BiWeekly(-1).get_trade_dt_list(
-            parse('20180101'), parse('20180301'))
+    lst = Weekly(1).get_trade_dt_list(
+        parse('20171229'), parse('20180301'))
     print(lst, type(lst))
