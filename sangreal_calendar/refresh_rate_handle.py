@@ -32,8 +32,10 @@ class RefreshBase(metaclass=ABCMeta):
 
     @staticmethod
     def df_handle(start_dt, end_dt, func):
-        start_dt = start_dt.strftime('%Y%m%d') if not isinstance(start_dt, str) else start_dt
-        end_dt = end_dt.strftime('%Y%m%d') if not isinstance(end_dt, str) else end_dt
+        start_dt = start_dt.strftime('%Y%m%d') if not isinstance(
+            start_dt, str) else start_dt
+        end_dt = end_dt.strftime('%Y%m%d') if not isinstance(end_dt,
+                                                             str) else end_dt
         df = get_trade_dt_list(start_dt, end_dt).copy()
         df['trade_dt'] = df['trade_dt'].apply(func)
         df.drop_duplicates(inplace=True)
@@ -75,6 +77,12 @@ class Weekly(RefreshBase):
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
         return pd.to_datetime(all_trade_dt)
+
+
+class BiWeekly(Weekly):
+    def get_trade_dt_list(self, start_dt, end_dt):
+        df = super().get_trade_dt_list(start_dt, end_dt)
+        return df[::2]
 
 
 class Quarterly(RefreshBase):
@@ -174,6 +182,6 @@ if __name__ == '__main__':
     # print(
     #     Quarterly(1, -1).get_trade_dt_list(
     #         parse('20080101'), parse('20100101')))
-    print(
-        Halfyearly(1, -1).get_trade_dt_list(
-            parse('20080101'), parse('20100101')))
+    lst = BiWeekly(-1).get_trade_dt_list(
+            parse('20180101'), parse('20180301'))
+    print(lst, type(lst))

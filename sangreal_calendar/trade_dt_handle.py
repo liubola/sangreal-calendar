@@ -1,6 +1,6 @@
 import tushare as ts
 from fastcache import lru_cache
-
+from .datasource import mixin_trade_dt
 
 def df_handle(date):
     return date if isinstance(date, str) else date.strftime('%Y%m%d')
@@ -13,11 +13,11 @@ def get_all_trade_dt():
     Returns:
         dataframe with columns of 'trade_dt'
     """
-    df = ts.trade_cal()
-    df = df[df['isOpen'] == 1][['calendarDate']]
-    df.columns = ['trade_dt']
-    df['trade_dt'] = df['trade_dt'].map(lambda x: x.replace('-', ''))
-    return df
+    # df = ts.trade_cal()
+    # df = df[df['isOpen'] == 1][['calendarDate']]
+    # df.columns = ['trade_dt']
+    # df['trade_dt'] = df['trade_dt'].map(lambda x: x.replace('-', ''))
+    return mixin_trade_dt()
 
 
 @lru_cache()
@@ -83,7 +83,6 @@ def step_trade_dt(date, step=1):
     date = df_handle(date)
     if step >= 0:
         t_df = t_df[t_df['trade_dt'] >= date]
-        print(t_df.head())
     elif step < 0:
         t_df = t_df[t_df['trade_dt'] < date]
     return t_df['trade_dt'].iloc[step]
