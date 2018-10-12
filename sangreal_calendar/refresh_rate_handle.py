@@ -1,7 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from .trade_dt_handle import get_trade_dt_list, step_trade_dt, adjust_trade_dt
 import pandas as pd
-import numpy as np
 
 
 class RefreshBase(metaclass=ABCMeta):
@@ -37,7 +36,7 @@ class RefreshBase(metaclass=ABCMeta):
         end_dt = end_dt.strftime('%Y%m%d') if not isinstance(end_dt,
                                                              str) else end_dt
         df = get_trade_dt_list(start_dt, end_dt).copy()
-        
+
         df['trade_dt'] = df['trade_dt'].apply(func)
         df.drop_duplicates(inplace=True)
         return df
@@ -187,6 +186,5 @@ if __name__ == '__main__':
     # print(
     #     Quarterly(1, -1).get_trade_dt_list(
     #         parse('20080101'), parse('20100101')))
-    lst = Weekly(1).get_trade_dt_list(
-        parse('20171229'), parse('20180301'))
+    lst = Weekly(1).get_trade_dt_list(parse('20171229'), parse('20180301'))
     print(lst, type(lst))

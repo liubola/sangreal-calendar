@@ -58,7 +58,7 @@ def adjust_trade_dt(date, adjust='last'):
     Returns:
         adjust type of trade_dt %Y%m%d
     """
-    t_df = get_trade_dt_list()
+    t_df = get_all_trade_dt()
     date = df_handle(date)
     if adjust == 'last':
         t_df = t_df[t_df['trade_dt'] <= date]
@@ -80,7 +80,7 @@ def step_trade_dt(date, step=1):
     Returns:
         date with step %Y%m%d
     """
-    t_df = get_trade_dt_list()
+    t_df = get_all_trade_dt()
     date = df_handle(date)
     if step >= 0:
         t_df = t_df[t_df['trade_dt'] >= date]
@@ -99,7 +99,7 @@ def delta_trade_dt(begin_dt, end_dt):
     Returns:
         len of date_range, int.
     """
-    t_df = get_trade_dt_list()
+    t_df = get_all_trade_dt()
     begin_dt, end_dt = df_handle(begin_dt), df_handle(end_dt)
     return len(
         t_df[(t_df['trade_dt'] >= begin_dt) & (t_df['trade_dt'] <= end_dt)])
