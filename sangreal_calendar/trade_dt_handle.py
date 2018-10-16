@@ -22,7 +22,7 @@ def get_all_trade_dt():
 
 
 @lru_cache()
-def get_trade_dt_list(begin_dt=None, end_dt=None, astype='pd'):
+def get_trade_dt_list(begin_dt=None, end_dt=None, astype='list'):
     """获取指定时间段的所有交易日
 
     Args: 
