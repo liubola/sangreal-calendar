@@ -61,7 +61,9 @@ class Weekly(RefreshBase):
         end_dt = end_dt.strftime('%Y%m%d') if not isinstance(end_dt,
                                                              str) else end_dt
         df = get_trade_dt_list(
-            step_trade_dt(begin_dt, -20), end_dt, astype='pd').copy()
+            step_trade_dt(begin_dt, -20),
+            step_trade_dt(end_dt, 20),
+            astype='pd').copy()
         df['trade_dt'] = pd.to_datetime(df['trade_dt'])
         df['week'] = df['trade_dt'].map(lambda x: f"{x.year}{x.week}")
         all_trade_dt = pd.Series()
@@ -72,7 +74,8 @@ class Weekly(RefreshBase):
                 tmp_df = df.drop_duplicates('week', keep='last')['trade_dt']
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        return all_trade_dt[all_trade_dt >= begin_dt].drop_duplicates()
+        return all_trade_dt[(all_trade_dt >= begin_dt)
+                            & (all_trade_dt <= end_dt)].drop_duplicates()
 
 
 class BiWeekly(RefreshBase):
