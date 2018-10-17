@@ -16,7 +16,7 @@ class RefreshBase(metaclass=ABCMeta):
         self.args = sorted(args, reverse=True)
 
     @abstractmethod
-    def get_trade_dt_list(self, start_dt, end_dt):
+    def get_trade_dt_list(self, begin_dt, end_dt):
         pass
 
     @staticmethod
@@ -30,12 +30,12 @@ class RefreshBase(metaclass=ABCMeta):
         return tmp_df
 
     @staticmethod
-    def df_handle(start_dt, end_dt, func):
-        start_dt = start_dt.strftime('%Y%m%d') if not isinstance(
-            start_dt, str) else start_dt
+    def df_handle(begin_dt, end_dt, func):
+        begin_dt = begin_dt.strftime('%Y%m%d') if not isinstance(
+            begin_dt, str) else begin_dt
         end_dt = end_dt.strftime('%Y%m%d') if not isinstance(end_dt,
                                                              str) else end_dt
-        df = get_trade_dt_list(start_dt, end_dt, astype='pd').copy()
+        df = get_trade_dt_list(begin_dt, end_dt, astype='pd').copy()
 
         df['trade_dt'] = df['trade_dt'].apply(func)
         df.drop_duplicates(inplace=True)
@@ -43,25 +43,25 @@ class RefreshBase(metaclass=ABCMeta):
 
 
 class Monthly(RefreshBase):
-    def get_trade_dt_list(self, start_dt, end_dt):
-        df = self.df_handle(start_dt, end_dt, lambda x: x[:6])
+    def get_trade_dt_list(self, begin_dt, end_dt):
+        df = self.df_handle(begin_dt, end_dt, lambda x: x[:6])
         all_trade_dt = pd.Series()
         for arg in self.args:
             tmp_df = self.freq_handle(arg, df)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
         all_trade_dt = pd.to_datetime(all_trade_dt)
-        return all_trade_dt[all_trade_dt >= start_dt]
+        return all_trade_dt[all_trade_dt >= begin_dt]
 
 
 class Weekly(RefreshBase):
-    def get_trade_dt_list(self, start_dt, end_dt):
-        start_dt = start_dt.strftime('%Y%m%d') if not isinstance(
-            start_dt, str) else start_dt
+    def get_trade_dt_list(self, begin_dt, end_dt):
+        begin_dt = begin_dt.strftime('%Y%m%d') if not isinstance(
+            begin_dt, str) else begin_dt
         end_dt = end_dt.strftime('%Y%m%d') if not isinstance(end_dt,
                                                              str) else end_dt
         df = get_trade_dt_list(
-            step_trade_dt(start_dt, -20), end_dt, astype='pd').copy()
+            step_trade_dt(begin_dt, -20), end_dt, astype='pd').copy()
         df['trade_dt'] = pd.to_datetime(df['trade_dt'])
         df['week'] = df['trade_dt'].map(lambda x: f"{x.year}{x.week}")
         all_trade_dt = pd.Series()
@@ -72,17 +72,17 @@ class Weekly(RefreshBase):
                 tmp_df = df.drop_duplicates('week', keep='last')['trade_dt']
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        return all_trade_dt[all_trade_dt >= start_dt].drop_duplicates()
+        return all_trade_dt[all_trade_dt >= begin_dt].drop_duplicates()
 
 
 class BiWeekly(RefreshBase):
-    def get_trade_dt_list(self, start_dt, end_dt):
+    def get_trade_dt_list(self, begin_dt, end_dt):
         all_trade_dt = pd.Series()
         for arg in self.args:
             if arg == 1:
-                tmp_df = Weekly(1).get_trade_dt_list(start_dt, end_dt)[::2]
+                tmp_df = Weekly(1).get_trade_dt_list(begin_dt, end_dt)[::2]
             elif arg == -1:
-                tmp_df = Weekly(-1).get_trade_dt_list(start_dt, end_dt)[::2]
+                tmp_df = Weekly(-1).get_trade_dt_list(begin_dt, end_dt)[::2]
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
         return all_trade_dt.drop_duplicates()
@@ -100,15 +100,15 @@ class Quarterly(RefreshBase):
         elif x <= x[:4] + '1231':
             return x[:4] + '10'
 
-    def get_trade_dt_list(self, start_dt, end_dt):
-        df = self.df_handle(start_dt, end_dt, self._quarter)
+    def get_trade_dt_list(self, begin_dt, end_dt):
+        df = self.df_handle(begin_dt, end_dt, self._quarter)
         all_trade_dt = pd.Series()
         for arg in self.args:
             tmp_df = self.freq_handle(arg, df, 3)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
         all_trade_dt = pd.to_datetime(all_trade_dt)
-        return all_trade_dt[all_trade_dt >= start_dt]
+        return all_trade_dt[all_trade_dt >= begin_dt]
 
 
 class Reportly(RefreshBase):
@@ -123,8 +123,8 @@ class Reportly(RefreshBase):
         elif x <= x[:4] + '1231':
             return x[:4] + '11'
 
-    def get_trade_dt_list(self, start_dt, end_dt):
-        df = self.df_handle(start_dt, end_dt, self._report)
+    def get_trade_dt_list(self, begin_dt, end_dt):
+        df = self.df_handle(begin_dt, end_dt, self._report)
         all_trade_dt = pd.Series()
         for arg in self.args:
             if arg == 1:
@@ -144,19 +144,19 @@ class Reportly(RefreshBase):
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
         all_trade_dt = pd.to_datetime(all_trade_dt)
-        return all_trade_dt[all_trade_dt >= start_dt]
+        return all_trade_dt[all_trade_dt >= begin_dt]
 
 
 class Yearly(RefreshBase):
-    def get_trade_dt_list(self, start_dt, end_dt):
-        df = self.df_handle(start_dt, end_dt, lambda x: x[:4] + '01')
+    def get_trade_dt_list(self, begin_dt, end_dt):
+        df = self.df_handle(begin_dt, end_dt, lambda x: x[:4] + '01')
         all_trade_dt = pd.Series()
         for arg in self.args:
             tmp_df = self.freq_handle(arg, df, 100)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
         all_trade_dt = pd.to_datetime(all_trade_dt)
-        return all_trade_dt[all_trade_dt >= start_dt]
+        return all_trade_dt[all_trade_dt >= begin_dt]
 
 
 class Halfyearly(RefreshBase):
@@ -167,15 +167,15 @@ class Halfyearly(RefreshBase):
         elif x <= x[:4] + '1231':
             return x[:4] + '07'
 
-    def get_trade_dt_list(self, start_dt, end_dt):
-        df = self.df_handle(start_dt, end_dt, self._year)
+    def get_trade_dt_list(self, begin_dt, end_dt):
+        df = self.df_handle(begin_dt, end_dt, self._year)
         all_trade_dt = pd.Series()
         for arg in self.args:
             tmp_df = self.freq_handle(arg, df, 6)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
         all_trade_dt = pd.to_datetime(all_trade_dt)
-        return all_trade_dt[all_trade_dt >= start_dt]
+        return all_trade_dt[all_trade_dt >= begin_dt]
 
 
 if __name__ == '__main__':
