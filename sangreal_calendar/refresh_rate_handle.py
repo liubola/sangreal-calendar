@@ -56,9 +56,12 @@ class Monthly(RefreshBase):
 
 class Weekly(RefreshBase):
     def get_trade_dt_list(self, start_dt, end_dt):
-        start_dt = start_dt.strftime('%Y%m%d')
-        end_dt = end_dt.strftime('%Y%m%d')
-        df = get_trade_dt_list(step_trade_dt(start_dt, -20), end_dt, astype='pd').copy()
+        start_dt = start_dt.strftime('%Y%m%d') if not isinstance(
+            start_dt, str) else start_dt
+        end_dt = end_dt.strftime('%Y%m%d') if not isinstance(end_dt,
+                                                             str) else end_dt
+        df = get_trade_dt_list(
+            step_trade_dt(start_dt, -20), end_dt, astype='pd').copy()
         df['trade_dt'] = pd.to_datetime(df['trade_dt'])
         df['week'] = df['trade_dt'].map(lambda x: f"{x.year}{x.week}")
         all_trade_dt = pd.Series()
