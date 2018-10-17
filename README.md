@@ -1,11 +1,11 @@
-# sangreal_calendar
+# sangreal-calendar
 trade_dt handle package for A-share market, use tushare as datasource
 
 以tushare为数据源的中国交易日历处理包
 
 ## 安装
 
-```pip install sangreal_calendar```
+```pip install sangreal-calendar```
 
 ## 交易日处理函数
 
