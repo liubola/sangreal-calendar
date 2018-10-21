@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='sangreal-calendar',
-    version='0.0.10',
+    version='0.0.11',
     description=('trade_dt handle for A-share market'),
     install_requires=[
         'bs4',
@@ -21,7 +21,7 @@ setup(
     license='GNU General Public License v3.0',
     packages=find_packages(),
     platforms=["all"],
-    url='https://github.com/liubola/sangreal_calendar',
+    url='https://github.com/liubola/sangreal-calendar',
     classifiers=[
         'Operating System :: OS Independent',
         'Intended Audience :: Developers',
