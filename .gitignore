@@ -105,3 +105,6 @@ venv.bak/
 
 # upload
 upload.py
+
+# vscode
+.vscode/
