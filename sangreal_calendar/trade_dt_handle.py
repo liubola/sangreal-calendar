@@ -1,6 +1,5 @@
 from fastcache import lru_cache
-
-from .datasource import mixin_trade_dt
+from sangreal_calendar.datasource import mixin_trade_dt
 
 
 def df_handle(date):
@@ -84,9 +83,16 @@ def step_trade_dt(date, step=1):
     date = df_handle(date)
     if step >= 0:
         t_df = t_df[t_df['trade_dt'] >= date]
+        try:
+            return t_df['trade_dt'].iloc[step]
+        except IndexError:
+            return t_df['trade_dt'].iloc[-1]
     elif step < 0:
         t_df = t_df[t_df['trade_dt'] < date]
-    return t_df['trade_dt'].iloc[step]
+        try:
+            return t_df['trade_dt'].iloc[step]
+        except IndexError:
+            return t_df['trade_dt'].iloc[0]
 
 
 @lru_cache()
@@ -109,4 +115,5 @@ if __name__ == "__main__":
     print(step_trade_dt('20180607', 1), '20180608')
     # 注意20171231为非交易日，自动视为20180102
     print(step_trade_dt('20171231', 1), '20180103')
+    print(step_trade_dt('20171231', 1000), '20181231')
     print(delta_trade_dt('20180102', '20180103'))
