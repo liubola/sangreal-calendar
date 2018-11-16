@@ -47,8 +47,8 @@ class RefreshBase(metaclass=ABCMeta):
             step_trade_dt(begin_dt, -offset),
             step_trade_dt(end_dt, offset),
             astype='pd').copy()
-        df['trade_dt'] = pd.to_datetime(df['trade_dt'])
-        df['month'] = df['trade_dt'].map(func)
+        df['_trade_dt'] = pd.to_datetime(df['trade_dt'])
+        df['month'] = df['_trade_dt'].map(func)
         all_trade_dt = pd.Series()
         for arg in self.args:
             if arg == 1:
@@ -60,7 +60,6 @@ class RefreshBase(metaclass=ABCMeta):
         all_trade_dt = all_trade_dt[
             (all_trade_dt >= begin_dt)
             & (all_trade_dt <= end_dt)].drop_duplicates()
-        all_trade_dt = all_trade_dt.map(lambda x: x.strftime('%Y%m%d'))
         return all_trade_dt
 
 
