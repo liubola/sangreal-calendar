@@ -1,4 +1,5 @@
 from abc import ABCMeta, abstractmethod
+from fastcache import lru_cache
 
 import pandas as pd
 from sangreal_calendar.trade_dt_handle import (
@@ -21,6 +22,24 @@ class RefreshBase(metaclass=ABCMeta):
     @abstractmethod
     def get(self, begin_dt, end_dt):
         pass
+
+    @lru_cache()
+    def next(self, date):
+        end_dt = step_trade_dt(date, 300)
+        date = dt_handle(date)
+        df = self.get(date, end_dt).tolist()
+        if df[0] == date:
+            df = df[1:]
+        return df[0]
+
+    @lru_cache()
+    def prev(self, date):
+        begin_dt = step_trade_dt(date, -300)
+        date = dt_handle(date)
+        df = self.get(begin_dt, date).tolist()
+        if df[-1] == date:
+            df = df[:-1]
+        return df[-1]
 
     @staticmethod
     def freq_handle(arg, df, step=1):
@@ -172,5 +191,7 @@ class Halfyearly(RefreshBase):
 
 
 if __name__ == '__main__':
-    lst = Monthly(1, -1).get('20161229', '20180301')
+    m = Monthly(1, -1)
+    lst = m.get('20161110', '20180301')
     print(lst, type(lst))
+    print(m.next('20161220'), m.prev('20161220'))
