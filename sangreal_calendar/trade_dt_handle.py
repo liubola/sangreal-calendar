@@ -1,10 +1,7 @@
 import pandas as pd
 from fastcache import lru_cache
 from sangreal_calendar.datasource import mixin_trade_dt
-
-
-def df_handle(date):
-    return pd.to_datetime(date).strftime('%Y%m%d')
+from sangreal_calendar.utils import dt_handle
 
 
 @lru_cache()
@@ -36,10 +33,10 @@ def get_trade_dt_list(begin_dt=None, end_dt=None, astype='list'):
     df = get_all_trade_dt()
     tmp_df = df.copy()
     if begin_dt is not None:
-        begin_dt = df_handle(begin_dt)
+        begin_dt = dt_handle(begin_dt)
         tmp_df = tmp_df[tmp_df['trade_dt'] >= begin_dt]
     if end_dt is not None:
-        end_dt = df_handle(end_dt)
+        end_dt = dt_handle(end_dt)
         tmp_df = tmp_df[tmp_df['trade_dt'] <= end_dt]
     if astype == 'pd':
         return tmp_df
@@ -61,7 +58,7 @@ def adjust_trade_dt(date, adjust='last'):
         adjust type of trade_dt %Y%m%d
     """
     t_df = get_all_trade_dt()
-    date = df_handle(date)
+    date = dt_handle(date)
     if adjust == 'last':
         t_df = t_df[t_df['trade_dt'] <= date]
         return t_df['trade_dt'].iloc[-1]
@@ -83,7 +80,7 @@ def step_trade_dt(date, step=1):
         date with step %Y%m%d
     """
     t_df = get_all_trade_dt()
-    date = df_handle(date)
+    date = dt_handle(date)
     if step >= 0:
         t_df = t_df[t_df['trade_dt'] >= date]
         try:
@@ -109,7 +106,7 @@ def delta_trade_dt(begin_dt, end_dt):
         len of date_range, int.
     """
     t_df = get_all_trade_dt()
-    begin_dt, end_dt = df_handle(begin_dt), df_handle(end_dt)
+    begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
     return len(
         t_df[(t_df['trade_dt'] >= begin_dt) & (t_df['trade_dt'] <= end_dt)])
 
