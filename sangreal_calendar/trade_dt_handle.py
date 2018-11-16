@@ -1,9 +1,10 @@
+import pandas as pd
 from fastcache import lru_cache
 from sangreal_calendar.datasource import mixin_trade_dt
 
 
 def df_handle(date):
-    return date if isinstance(date, str) else date.strftime('%Y%m%d')
+    return pd.to_datetime(date).strftime('%Y%m%d')
 
 
 @lru_cache()
@@ -35,8 +36,10 @@ def get_trade_dt_list(begin_dt=None, end_dt=None, astype='list'):
     df = get_all_trade_dt()
     tmp_df = df.copy()
     if begin_dt is not None:
+        begin_dt = df_handle(begin_dt)
         tmp_df = tmp_df[tmp_df['trade_dt'] >= begin_dt]
     if end_dt is not None:
+        end_dt = df_handle(end_dt)
         tmp_df = tmp_df[tmp_df['trade_dt'] <= end_dt]
     if astype == 'pd':
         return tmp_df
@@ -112,8 +115,11 @@ def delta_trade_dt(begin_dt, end_dt):
 
 
 if __name__ == "__main__":
+    import datetime as dt
     print(step_trade_dt('20180607', 1), '20180608')
     # 注意20171231为非交易日，自动视为20180102
     print(step_trade_dt('20171231', 1), '20180103')
     print(step_trade_dt('20171231', 1000), '20181231')
+    print(step_trade_dt('20171231', -100000), '19901219')
     print(delta_trade_dt('20180102', '20180103'))
+    print(get_trade_dt_list('20180101', dt.date.today()))
