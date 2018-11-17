@@ -23,22 +23,18 @@ class RefreshBase(metaclass=ABCMeta):
     def get(self, begin_dt, end_dt):
         pass
 
-    @lru_cache()
     def next(self, date):
         end_dt = step_trade_dt(date, 300)
-        date = dt_handle(date)
         df = self.get(date, end_dt).tolist()
         if df[0] == date:
-            df = df[1:]
+            return df[1]
         return df[0]
 
-    @lru_cache()
     def prev(self, date):
         begin_dt = step_trade_dt(date, -300)
-        date = dt_handle(date)
         df = self.get(begin_dt, date).tolist()
         if df[-1] == date:
-            df = df[:-1]
+            return df[-2]
         return df[-1]
 
     @staticmethod
@@ -53,17 +49,23 @@ class RefreshBase(metaclass=ABCMeta):
         return tmp_df
 
     @staticmethod
-    def df_handle(begin_dt, end_dt, func):
+    def df_handle(begin_dt='19900101', end_dt='20990101', func=None):
+        begin_dt = dt_handle(begin_dt)
+        end_dt = dt_handle(end_dt)
         df = get_trade_dt_list(begin_dt, end_dt, astype='pd').copy()
 
         df['trade_dt'] = df['trade_dt'].apply(func)
         df.drop_duplicates(inplace=True)
         return df
 
-    def _get(self, begin_dt, end_dt, func, offset):
+    def _get(self,
+             begin_dt='19900101',
+             end_dt='20990101',
+             func=None,
+             offset=None):
         begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
         df = get_trade_dt_list(
-            step_trade_dt(begin_dt, -offset),
+            step_trade_dt(begin_dt, -1 * offset),
             step_trade_dt(end_dt, offset),
             astype='pd').copy()
         df['_trade_dt'] = pd.to_datetime(df['trade_dt'])
@@ -83,7 +85,7 @@ class RefreshBase(metaclass=ABCMeta):
 
 
 class Monthly(RefreshBase):
-    def get(self, begin_dt, end_dt):
+    def get(self, begin_dt='19900101', end_dt='20990101'):
         def func(x):
             return f"{x.year}{x.month}"
 
@@ -92,7 +94,7 @@ class Monthly(RefreshBase):
 
 
 class Weekly(RefreshBase):
-    def get(self, begin_dt, end_dt):
+    def get(self, begin_dt='19900101', end_dt='20990101'):
         def func(x):
             return f"{x.year}{x.week}"
 
@@ -101,7 +103,7 @@ class Weekly(RefreshBase):
 
 
 class BiWeekly(RefreshBase):
-    def get(self, begin_dt, end_dt):
+    def get(self, begin_dt='19900101', end_dt='20990101'):
         all_trade_dt = pd.Series()
         for arg in self.args:
             if arg == 1:
@@ -115,7 +117,7 @@ class BiWeekly(RefreshBase):
 
 
 class Quarterly(RefreshBase):
-    def get(self, begin_dt, end_dt):
+    def get(self, begin_dt='19900101', end_dt='20990101'):
         def func(x):
             return f"{x.year}{x.quarter}"
 
@@ -135,7 +137,7 @@ class Reportly(RefreshBase):
         elif x <= x[:4] + '1231':
             return x[:4] + '11'
 
-    def get(self, begin_dt, end_dt):
+    def get(self, begin_dt='19900101', end_dt='20990101'):
         begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
         df = self.df_handle(begin_dt, end_dt, self._report)
         all_trade_dt = pd.Series()
@@ -162,7 +164,7 @@ class Reportly(RefreshBase):
 
 
 class Yearly(RefreshBase):
-    def get(self, begin_dt, end_dt):
+    def get(self, begin_dt='19900101', end_dt='20990101'):
         def func(x):
             return f"{x.year}"
 
@@ -178,7 +180,7 @@ class Halfyearly(RefreshBase):
         elif x <= x[:4] + '1231':
             return x[:4] + '07'
 
-    def get(self, begin_dt, end_dt):
+    def get(self, begin_dt='19900101', end_dt='20990101'):
         begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
         df = self.df_handle(begin_dt, end_dt, self._year)
         all_trade_dt = pd.Series()
@@ -192,6 +194,6 @@ class Halfyearly(RefreshBase):
 
 if __name__ == '__main__':
     m = Monthly(1, -1)
-    lst = m.get('20161110', '20180301')
+    lst = m.get()
     print(lst, type(lst))
     print(m.next('20161220'), m.prev('20161220'))

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='sangreal-calendar',
-    version='0.0.18',
+    version='0.0.19',
     description=('trade_dt handle for A-share market'),
     install_requires=[
         'bs4',

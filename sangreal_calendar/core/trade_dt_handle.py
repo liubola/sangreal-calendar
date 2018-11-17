@@ -18,8 +18,7 @@ def get_all_trade_dt():
     return mixin_trade_dt()
 
 
-@lru_cache()
-def get_trade_dt_list(begin_dt=None, end_dt=None, astype='list'):
+def get_trade_dt_list(begin_dt='19900101', end_dt='20990101', astype='list'):
     """获取指定时间段的所有交易日
 
     Args: 
@@ -32,12 +31,9 @@ def get_trade_dt_list(begin_dt=None, end_dt=None, astype='list'):
     """
     df = get_all_trade_dt()
     tmp_df = df.copy()
-    if begin_dt is not None:
-        begin_dt = dt_handle(begin_dt)
-        tmp_df = tmp_df[tmp_df['trade_dt'] >= begin_dt]
-    if end_dt is not None:
-        end_dt = dt_handle(end_dt)
-        tmp_df = tmp_df[tmp_df['trade_dt'] <= end_dt]
+    begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
+    tmp_df = tmp_df[(tmp_df['trade_dt'] >= begin_dt)
+                    & (tmp_df['trade_dt'] <= end_dt)]
     if astype == 'pd':
         return tmp_df
     elif astype == 'list':
@@ -46,7 +42,6 @@ def get_trade_dt_list(begin_dt=None, end_dt=None, astype='list'):
         raise ValueError(f"astype:{astype} must be 'pd' or 'list'!")
 
 
-@lru_cache()
 def adjust_trade_dt(date, adjust='last'):
     """调整自然日至最近的交易日
     
@@ -69,7 +64,6 @@ def adjust_trade_dt(date, adjust='last'):
         raise ValueError(f"adjust:{adjust} must be 'last' or 'next'!")
 
 
-@lru_cache()
 def step_trade_dt(date, step=1):
     """获得n日前（后）的交易日，对于非交易日来说，将其视为之后的第一个交易日
     Args:
@@ -82,20 +76,17 @@ def step_trade_dt(date, step=1):
     t_df = get_all_trade_dt()
     date = dt_handle(date)
     if step >= 0:
-        t_df = t_df[t_df['trade_dt'] >= date]
         try:
-            return t_df['trade_dt'].iloc[step]
+            return t_df[t_df['trade_dt'] >= date]['trade_dt'].iloc[step]
         except IndexError:
             return t_df['trade_dt'].iloc[-1]
     elif step < 0:
-        t_df = t_df[t_df['trade_dt'] < date]
         try:
-            return t_df['trade_dt'].iloc[step]
+            return t_df[t_df['trade_dt'] < date]['trade_dt'].iloc[step]
         except IndexError:
             return t_df['trade_dt'].iloc[0]
 
 
-@lru_cache()
 def delta_trade_dt(begin_dt, end_dt):
     """获得指定时间区间内的交易日长度，首位均包含
     Args:
