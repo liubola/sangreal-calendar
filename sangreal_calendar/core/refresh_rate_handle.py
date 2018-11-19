@@ -24,6 +24,15 @@ class RefreshBase(metaclass=ABCMeta):
         pass
 
     def next(self, date):
+        """[get next date, 20180921 -> 20180928(Monthly(-1))]
+        
+        Arguments:
+            date {[str or datetime]} -- [date]
+        
+        Returns:
+            [str] -- [next day in class frequency]
+        """
+
         end_dt = step_trade_dt(date, 300)
         df = self.get(date, end_dt).tolist()
         if df[0] == date:
@@ -31,6 +40,15 @@ class RefreshBase(metaclass=ABCMeta):
         return df[0]
 
     def prev(self, date):
+        """[get previous day, 20180921 -> 20180831(Monthly(-1))]
+        
+        Arguments:
+            date {[str or datetime]} -- [date]
+        
+        Returns:
+            [str] -- [previous day in class frequency]
+        """
+
         begin_dt = step_trade_dt(date, -300)
         df = self.get(begin_dt, date).tolist()
         if df[-1] == date:
@@ -86,6 +104,19 @@ class RefreshBase(metaclass=ABCMeta):
 
 class Monthly(RefreshBase):
     def get(self, begin_dt='19900101', end_dt='20990101'):
+        """[get trade_dt Series with class freq]
+        
+        Arguments:
+            RefreshBase {[cls]} -- [refreshbase]
+        
+        Keyword Arguments:
+            begin_dt {str or datetime} -- [begin_dt] (default: {'19900101'})
+            end_dt {str or datetime} -- [end_dt] (default: {'20990101'})
+        
+        Returns:
+            [pd.Series] -- [trade_dt Series]
+        """
+
         def func(x):
             return f"{x.year}{x.month}"
 
@@ -95,6 +126,19 @@ class Monthly(RefreshBase):
 
 class Weekly(RefreshBase):
     def get(self, begin_dt='19900101', end_dt='20990101'):
+        """[get trade_dt Series with class freq]
+        
+        Arguments:
+            RefreshBase {[cls]} -- [refreshbase]
+        
+        Keyword Arguments:
+            begin_dt {str or datetime} -- [begin_dt] (default: {'19900101'})
+            end_dt {str or datetime} -- [end_dt] (default: {'20990101'})
+        
+        Returns:
+            [pd.Series] -- [trade_dt Series]
+        """
+
         def func(x):
             return f"{x.year}{x.week}"
 
@@ -104,6 +148,19 @@ class Weekly(RefreshBase):
 
 class BiWeekly(RefreshBase):
     def get(self, begin_dt='19900101', end_dt='20990101'):
+        """[get trade_dt Series with class freq]
+        
+        Arguments:
+            RefreshBase {[cls]} -- [refreshbase]
+        
+        Keyword Arguments:
+            begin_dt {str or datetime} -- [begin_dt] (default: {'19900101'})
+            end_dt {str or datetime} -- [end_dt] (default: {'20990101'})
+        
+        Returns:
+            [pd.Series] -- [trade_dt Series]
+        """
+
         all_trade_dt = pd.Series()
         for arg in self.args:
             if arg == 1:
@@ -118,6 +175,19 @@ class BiWeekly(RefreshBase):
 
 class Quarterly(RefreshBase):
     def get(self, begin_dt='19900101', end_dt='20990101'):
+        """[get trade_dt Series with class freq]
+        
+        Arguments:
+            RefreshBase {[cls]} -- [refreshbase]
+        
+        Keyword Arguments:
+            begin_dt {str or datetime} -- [begin_dt] (default: {'19900101'})
+            end_dt {str or datetime} -- [end_dt] (default: {'20990101'})
+        
+        Returns:
+            [pd.Series] -- [trade_dt Series]
+        """
+
         def func(x):
             return f"{x.year}{x.quarter}"
 
@@ -138,6 +208,19 @@ class Reportly(RefreshBase):
             return x[:4] + '11'
 
     def get(self, begin_dt='19900101', end_dt='20990101'):
+        """[get trade_dt Series with class freq]
+        
+        Arguments:
+            RefreshBase {[cls]} -- [refreshbase]
+        
+        Keyword Arguments:
+            begin_dt {str or datetime} -- [begin_dt] (default: {'19900101'})
+            end_dt {str or datetime} -- [end_dt] (default: {'20990101'})
+        
+        Returns:
+            [pd.Series] -- [trade_dt Series]
+        """
+        
         begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
         df = self.df_handle(begin_dt, end_dt, self._report)
         all_trade_dt = pd.Series()
@@ -165,6 +248,19 @@ class Reportly(RefreshBase):
 
 class Yearly(RefreshBase):
     def get(self, begin_dt='19900101', end_dt='20990101'):
+        """[get trade_dt Series with class freq]
+        
+        Arguments:
+            RefreshBase {[cls]} -- [refreshbase]
+        
+        Keyword Arguments:
+            begin_dt {str or datetime} -- [begin_dt] (default: {'19900101'})
+            end_dt {str or datetime} -- [end_dt] (default: {'20990101'})
+        
+        Returns:
+            [pd.Series] -- [trade_dt Series]
+        """
+        
         def func(x):
             return f"{x.year}"
 
@@ -181,6 +277,19 @@ class Halfyearly(RefreshBase):
             return x[:4] + '07'
 
     def get(self, begin_dt='19900101', end_dt='20990101'):
+        """[get trade_dt Series with class freq]
+        
+        Arguments:
+            RefreshBase {[cls]} -- [refreshbase]
+        
+        Keyword Arguments:
+            begin_dt {str or datetime} -- [begin_dt] (default: {'19900101'})
+            end_dt {str or datetime} -- [end_dt] (default: {'20990101'})
+        
+        Returns:
+            [pd.Series] -- [trade_dt Series]
+        """
+        
         begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
         df = self.df_handle(begin_dt, end_dt, self._year)
         all_trade_dt = pd.Series()

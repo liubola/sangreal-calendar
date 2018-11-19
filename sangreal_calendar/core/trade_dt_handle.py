@@ -6,11 +6,12 @@ from sangreal_calendar.utils import dt_handle
 
 @lru_cache()
 def get_all_trade_dt():
-    """获取所有交易日
-  
+    """[获取所有交易日]
+    
     Returns:
-        dataframe with columns of 'trade_dt'
+        [pd.DataFrame] -- [dataframe with columns of 'trade_dt']
     """
+
     # df = ts.trade_cal()
     # df = df[df['isOpen'] == 1][['calendarDate']]
     # df.columns = ['trade_dt']
@@ -19,16 +20,20 @@ def get_all_trade_dt():
 
 
 def get_trade_dt_list(begin_dt='19900101', end_dt='20990101', astype='list'):
-    """获取指定时间段的所有交易日
-
-    Args: 
-        begin_dt: begin_dt %Y%m%d or datetime.
-        end_dt: end_dt %Y%m%d.
-        astype: output type, dataframe or list, 'pd' or 'list'
+    """[获取指定时间段的所有交易日]
+    
+    Keyword Arguments:
+        begin_dt {str or datetime} -- [begin_dt] (default: {'19900101'})
+        end_dt {str or datetime} -- [end_dt] (default: {'20990101'})
+        astype {str} -- [list or pd] (default: {'list'})
+    
+    Raises:
+        ValueError -- [f"astype:{astype} must be 'pd' or 'list'!"]
     
     Returns:
-        dataframe with columns of 'trade_dt' or list
+        [pd.DataFrame or list] -- [trade_dts between begin_dt and end_dt]
     """
+
     df = get_all_trade_dt()
     tmp_df = df.copy()
     begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
@@ -40,9 +45,6 @@ def get_trade_dt_list(begin_dt='19900101', end_dt='20990101', astype='list'):
         return tmp_df['trade_dt'].tolist()
     else:
         raise ValueError(f"astype:{astype} must be 'pd' or 'list'!")
-
-
-def adjust_trade_dt(date, adjust='last'):
     """调整自然日至最近的交易日
     
     Args:
@@ -52,6 +54,24 @@ def adjust_trade_dt(date, adjust='last'):
     Returns:
         adjust type of trade_dt %Y%m%d
     """
+
+
+def adjust_trade_dt(date, adjust='last'):
+    """[adjust trade_dt]
+    
+    Arguments:
+        date {[str or datetime]} -- [date]
+    
+    Keyword Arguments:
+        adjust {str} -- [last or next] (default: {'last'})
+    
+    Raises:
+        ValueError -- [f"adjust:{adjust} must be 'last' or 'next'!"]
+    
+    Returns:
+        [str] -- [adjusted trade_dt with %Y%m%d type]
+    """
+
     t_df = get_all_trade_dt()
     date = dt_handle(date)
     if adjust == 'last':
@@ -65,14 +85,18 @@ def adjust_trade_dt(date, adjust='last'):
 
 
 def step_trade_dt(date, step=1):
-    """获得n日前（后）的交易日，对于非交易日来说，将其视为之后的第一个交易日
-    Args:
-        date: %Y%m%d or datetime.
-        step: int.
-
+    """[step trade_dt]
+    
+    Arguments:
+        date {[str or datetime]} -- [date]
+    
+    Keyword Arguments:
+        step {int} -- [step] (default: {1})
+    
     Returns:
-        date with step %Y%m%d
+        [str] -- [date with %Y%m%d type]
     """
+
     t_df = get_all_trade_dt()
     date = dt_handle(date)
     if step >= 0:
@@ -88,14 +112,16 @@ def step_trade_dt(date, step=1):
 
 
 def delta_trade_dt(begin_dt, end_dt):
-    """获得指定时间区间内的交易日长度，首位均包含
-    Args:
-        begin_dt: %Y%m%d or datetime.
-        end_dt: %Y%m%d or datetime.
-
+    """[get length of trade_dt, include begin_dt and end_dt]
+    
+    Arguments:
+        begin_dt {[str or datetime]} -- [begin_dt]
+        end_dt {[tstr or datetime]} -- [end_dt]
+    
     Returns:
-        len of date_range, int.
+        [int] -- [len of date_range]
     """
+
     t_df = get_all_trade_dt()
     begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
     return len(
