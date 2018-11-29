@@ -61,9 +61,9 @@ class RefreshBase(metaclass=ABCMeta):
             tmp_df = df['trade_dt'].apply(
                 lambda x: adjust_trade_dt(x[:6] + '01', 'next'))
         elif arg == -1:
-            print(df['trade_dt'])
             tmp_df = df['trade_dt'].apply(
                 lambda x: step_trade_dt(str(int(x[:6]) + step) + '01', -1))
+            
         return tmp_df
 
     @staticmethod
@@ -302,7 +302,7 @@ class Halfyearly(RefreshBase):
 
 
 if __name__ == '__main__':
-    m = Monthly(1, -1)
+    m = Halfyearly(-1)
     lst = m.get()
     print(lst, type(lst))
     print(m.next('20161220'), m.prev('20161220'))

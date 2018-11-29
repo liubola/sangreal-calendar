@@ -3,7 +3,10 @@ import pandas as pd
 
 
 def dt_handle(date):
-    return pd.to_datetime(date).strftime('%Y%m%d')
+    try:
+        return pd.to_datetime(date).strftime('%Y%m%d')
+    except ValueError:
+        return date
 
 
 def set(country=None):
