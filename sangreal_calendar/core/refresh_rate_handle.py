@@ -23,6 +23,7 @@ class RefreshBase(metaclass=ABCMeta):
     def get(self, begin_dt, end_dt):
         pass
 
+    @lru_cache()
     def next(self, date):
         """[get next date, 20180921 -> 20180928(Monthly(-1))]
         
@@ -39,6 +40,7 @@ class RefreshBase(metaclass=ABCMeta):
             return df[1]
         return df[0]
 
+    @lru_cache()
     def prev(self, date):
         """[get previous day, 20180921 -> 20180831(Monthly(-1))]
         
@@ -63,7 +65,7 @@ class RefreshBase(metaclass=ABCMeta):
         elif arg == -1:
             tmp_df = df['trade_dt'].apply(
                 lambda x: step_trade_dt(str(int(x[:6]) + step) + '01', -1))
-            
+
         return tmp_df
 
     @staticmethod
@@ -220,7 +222,7 @@ class Reportly(RefreshBase):
         Returns:
             [pd.Series] -- [trade_dt Series]
         """
-        
+
         begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
         df = self.df_handle(begin_dt, end_dt, self._report)
         all_trade_dt = pd.Series()
@@ -260,7 +262,7 @@ class Yearly(RefreshBase):
         Returns:
             [pd.Series] -- [trade_dt Series]
         """
-        
+
         def func(x):
             return f"{x.year}"
 
@@ -289,7 +291,7 @@ class Halfyearly(RefreshBase):
         Returns:
             [pd.Series] -- [trade_dt Series]
         """
-        
+
         begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
         df = self.df_handle(begin_dt, end_dt, self._year)
         all_trade_dt = pd.Series()
