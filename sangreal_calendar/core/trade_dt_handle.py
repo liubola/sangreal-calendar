@@ -56,6 +56,7 @@ def get_trade_dt_list(begin_dt='19900101', end_dt='20990101', astype='list'):
     """
 
 
+@lru_cache()
 def adjust_trade_dt(date, adjust='last'):
     """[adjust trade_dt]
     
@@ -84,6 +85,7 @@ def adjust_trade_dt(date, adjust='last'):
         raise ValueError(f"adjust:{adjust} must be 'last' or 'next'!")
 
 
+@lru_cache()
 def step_trade_dt(date, step=1):
     """[step trade_dt]
     
