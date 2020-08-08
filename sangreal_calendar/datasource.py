@@ -1,7 +1,8 @@
-import tushare as ts
 import os
-import pandas as pd
 from itertools import chain
+
+import akshare as ak
+import pandas as pd
 
 
 def china_td():
@@ -10,8 +11,7 @@ def china_td():
     Returns:
         list of 'trade_dt'
     """
-    df = ts.trade_cal()
-    df = df[df['isOpen'] == 1][['calendarDate']]
+    df = ak.tool_trade_date_hist_sina()
     df.columns = ['trade_dt']
     df['trade_dt'] = df['trade_dt'].map(lambda x: x.replace('-', ''))
     return df.trade_dt.tolist()
