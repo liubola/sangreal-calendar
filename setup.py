@@ -7,7 +7,7 @@ setup(
     install_requires=[
         'pandas',
         'numpy',
-        'akshare',
+        'baostock',
     ],
     # long_description=open('README.rst').read(),
     author='liubola',
