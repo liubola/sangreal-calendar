@@ -1,9 +1,8 @@
 import os
 from itertools import chain
 
-import pandas as pd
-
 import akshare as ak
+import pandas as pd
 
 
 def china_td():

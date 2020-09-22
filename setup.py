@@ -2,12 +2,12 @@ from setuptools import setup, find_packages
 
 setup(
     name='sangreal-calendar',
-    version='0.0.34',
+    version='0.0.35',
     description=('trade_dt handle for A-share market'),
     install_requires=[
         'pandas',
         'numpy',
-        'baostock',
+        'akshare',
     ],
     # long_description=open('README.rst').read(),
     author='liubola',
