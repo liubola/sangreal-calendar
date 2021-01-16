@@ -13,13 +13,13 @@ trade_dt handle package for A-share market, use tushare as datasource
 from sangreal_calenadr import *
 
 # 获取交易日列表
-get_trade_dt_list(begin_dt='20180101', end_dt='20180201')
+get_trade_dts(begin_dt='20180101', end_dt='20180201')
 ['20180102', '20180103', ..., '20180201']
 ```
 
 ```python
 # 获取交易日DataFrame
-get_trade_dt_list(begin_dt='20180101', end_dt='20180201', astype='pd')
+get_trade_dts(begin_dt='20180101', end_dt='20180201', astype='pd')
       trade_dt
 6613  20180102
 6614  20180103

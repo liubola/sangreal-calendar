@@ -6,8 +6,6 @@ setup(
     description=('trade_dt handle for A-share market'),
     install_requires=[
         'pandas',
-        'numpy',
-        'akshare',
     ],
     # long_description=open('README.rst').read(),
     author='liubola',

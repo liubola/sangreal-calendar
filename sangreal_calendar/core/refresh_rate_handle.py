@@ -3,7 +3,7 @@ from functools import lru_cache
 
 import pandas as pd
 from sangreal_calendar.core.trade_dt_handle import (adjust_trade_dt,
-                                                    get_trade_dt_list,
+                                                    get_trade_dts,
                                                     step_trade_dt)
 from sangreal_calendar.utils import dt_handle
 
@@ -46,7 +46,7 @@ class RefreshBase(metaclass=ABCMeta):
             return df[step-1]
         except IndexError:
             return df[-1]
-            
+
     @lru_cache()
     def prev(self, date, step=1, adjust=True):
         """[get previous day, 20180921 -> 20180831(Monthly(-1))]
@@ -73,11 +73,10 @@ class RefreshBase(metaclass=ABCMeta):
     @staticmethod
     def freq_handle(arg, df, step=1):
         if arg == 1:
-            tmp_df = df['trade_dt'].apply(
-                lambda x: adjust_trade_dt(x[:6] + '01', 'next'))
-        elif arg == -1:
-            tmp_df = df['trade_dt'].apply(
-                lambda x: step_trade_dt(str(int(x[:6]) + step) + '01', -1))
+            tmp_df = df.map(lambda x: adjust_trade_dt(x[:6] + '01', 'next'))
+        else:
+            tmp_df = df.map(lambda x: step_trade_dt(
+                str(int(x[:6]) + step) + '01', -1))
 
         return tmp_df
 
@@ -85,9 +84,9 @@ class RefreshBase(metaclass=ABCMeta):
     def df_handle(begin_dt='19900101', end_dt='20990101', func=None):
         begin_dt = dt_handle(begin_dt)
         end_dt = dt_handle(end_dt)
-        df = get_trade_dt_list(begin_dt, end_dt, astype='pd').copy()
+        df = get_trade_dts(begin_dt, end_dt).copy()
 
-        df['trade_dt'] = df['trade_dt'].apply(func)
+        df = df.map(func)
         df.drop_duplicates(inplace=True)
         return df
 
@@ -97,24 +96,25 @@ class RefreshBase(metaclass=ABCMeta):
              func=None,
              offset=None):
         begin_dt, end_dt = dt_handle(begin_dt), dt_handle(end_dt)
-        df = get_trade_dt_list(
+        df = get_trade_dts(
             step_trade_dt(begin_dt, -1 * offset),
-            step_trade_dt(end_dt, offset),
-            astype='pd').copy()
+            step_trade_dt(end_dt, offset)).to_frame('trade_dt')
         df['_trade_dt'] = pd.to_datetime(df['trade_dt'])
         df['month'] = df['_trade_dt'].map(func)
         all_trade_dt = pd.Series()
         for arg in self.args:
             if arg == 1:
                 tmp_df = df.drop_duplicates('month', keep='first')['trade_dt']
-            elif arg == -1:
+            else:
                 tmp_df = df.drop_duplicates('month', keep='last')['trade_dt']
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
         all_trade_dt = all_trade_dt[
             (all_trade_dt >= begin_dt)
             & (all_trade_dt <= end_dt)].drop_duplicates()
+        all_trade_dt.reset_index(drop=True, inplace=True)
         return all_trade_dt
+
 
 class Daily(RefreshBase):
     def get(self, begin_dt='19900101', end_dt='20990101'):
@@ -131,10 +131,10 @@ class Daily(RefreshBase):
             [pd.Series] -- [trade_dt Series]
         """
 
-        return get_trade_dt_list(
+        return get_trade_dts(
             begin_dt,
-            end_dt,
-            astype='pd')['trade_dt'].copy()
+            end_dt).copy()
+
 
 class Monthly(RefreshBase):
     def get(self, begin_dt='19900101', end_dt='20990101'):
@@ -199,11 +199,12 @@ class BiWeekly(RefreshBase):
         for arg in self.args:
             if arg == 1:
                 tmp_df = Weekly(1).get(begin_dt, end_dt)[::2]
-            elif arg == -1:
+            else:
                 tmp_df = Weekly(-1).get(begin_dt, end_dt)[::2]
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
         all_trade_dt.drop_duplicates(inplace=True)
+        all_trade_dt.reset_index(drop=True, inplace=True)
         return all_trade_dt
 
 
@@ -260,10 +261,9 @@ class Reportly(RefreshBase):
         all_trade_dt = pd.Series()
         for arg in self.args:
             if arg == 1:
-                tmp_df = df['trade_dt'].apply(
+                tmp_df = df.map(
                     lambda x: adjust_trade_dt(x[:6] + '01', 'next'))
-            elif arg == -1:
-
+            else:
                 def neg_report(x):
                     if x[-2:] == '11':
                         return step_trade_dt(str(int(x[:4]) + 1) + '0501', -1)
@@ -272,12 +272,13 @@ class Reportly(RefreshBase):
                     elif x[-2:] == '05':
                         return step_trade_dt(x[:4] + '0901', -1)
 
-                tmp_df = df['trade_dt'].apply(neg_report)
+                tmp_df = df.map(neg_report)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        # all_trade_dt = pd.to_datetime(all_trade_dt)
-        return all_trade_dt[(all_trade_dt >= begin_dt)
-                            & (all_trade_dt <= end_dt)]
+        all_trade_dt = all_trade_dt[(all_trade_dt >= begin_dt)
+                                    & (all_trade_dt <= end_dt)].copy()
+        all_trade_dt.reset_index(drop=True, inplace=True)
+        return
 
 
 class Yearly(RefreshBase):
@@ -331,12 +332,11 @@ class Halfyearly(RefreshBase):
             tmp_df = self.freq_handle(arg, df, 6)
             all_trade_dt = pd.concat([all_trade_dt, tmp_df])
         all_trade_dt.sort_values(inplace=True)
-        return all_trade_dt[(all_trade_dt >= begin_dt)
-                            & (all_trade_dt <= end_dt)]
+        all_trade_dt = all_trade_dt[(all_trade_dt >= begin_dt)
+                                    & (all_trade_dt <= end_dt)].copy()
+        all_trade_dt.reset_index(drop=True, inplace=True)
+        return all_trade_dt
 
 
 if __name__ == '__main__':
-    m = Halfyearly(-1)
-    lst = m.get()
-    print(lst, type(lst))
-    print(m.next('20161220'), m.prev('20161220'))
+    pass
