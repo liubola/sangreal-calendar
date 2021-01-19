@@ -1,7 +1,5 @@
 # sangreal-calendar
-trade_dt handle package for A-share market, use tushare as datasource
-
-以tushare为数据源的中国交易日历处理包
+由于开源数据不稳定，现改为需要自行注入
 
 ## 安装
 
@@ -11,6 +9,9 @@ trade_dt handle package for A-share market, use tushare as datasource
 
 ```python
 from sangreal_calenadr import *
+# 获取历史交易日
+tmp_series = get_xxx() -> pd.Series
+CALENDAR.inject(tmp_series)
 
 # 获取交易日列表
 get_trade_dts(begin_dt='20180101', end_dt='20180201')
