@@ -174,7 +174,8 @@ class Weekly(RefreshBase):
         """
 
         def func(x):
-            return f"{x.year}{x.week}"
+            tmpx = x.isocalendar()
+            return f"{tmpx[0]}{tmpx[1]}"
 
         return self._get(
             begin_dt=begin_dt, end_dt=end_dt, func=func, offset=20)
